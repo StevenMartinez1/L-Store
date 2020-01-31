@@ -1,14 +1,16 @@
 from template.table import Table, Record
 from template.index import Index
-
+from template.page import *
 
 class Query:
     """
     # Creates a Query object that can perform different queries on the specified table 
     """
 
+
     def __init__(self, table):
         self.table = table
+
         pass
 
     """
@@ -25,6 +27,22 @@ class Query:
 
     def insert(self, *columns):
         schema_encoding = '0' * self.table.num_columns
+
+        i = 0
+        while(self.table.pages[i].num_records == 512):
+            if(self.table.pages[i].num_records == 512):
+                i = i + self.table.num_columns
+
+
+
+        for column in columns:
+
+                self.table.pages[i].write(column)
+
+                if (self.table.pages[i].num_records == 512):
+                        new_page = Page()
+                        self.table.pages.append(new_page)
+                i = i + 1
         pass
 
     """
