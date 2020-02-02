@@ -1,5 +1,7 @@
 from template.page import *
 from time import time
+from template.config import *
+
 
 INDIRECTION_COLUMN = 0
 RID_COLUMN = 1
@@ -13,6 +15,9 @@ class Record:
         self.rid = rid
         self.key = key
         self.columns = columns
+        #print(self.columns)
+        #self.timeStamp = time()
+        #RIDcount = RIDcount + 1
 
 class Table:
 
@@ -24,13 +29,17 @@ class Table:
     def __init__(self, name, num_columns, key):
         self.name = name
         self.key = key
-        self.num_columns = num_columns
+        self.num_columns = num_columns + 4
         self.page_directory = {}
 
         self.pages = []
-        for i in range(0, num_columns):
+        self.tail_pages = []
+        for i in range(0, self.num_columns):
             new_page = Page()
             self.pages.append(new_page)
+        for i in range(0, self.num_columns):
+            new_page = Page()
+            self.tail_pages.append(new_page)
 
         pass
 
