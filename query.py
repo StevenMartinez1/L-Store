@@ -13,6 +13,7 @@ class Query:
 
     def __init__(self, table):
         self.table = table
+        self.index = Index(table)
         self.RIDcount = 1
         pass
 
@@ -37,7 +38,7 @@ class Query:
         while(self.table.pages[i].num_records == 512):
             if(self.table.pages[i].num_records == 512):
                 i = i + self.table.num_columns
-
+        current_page = i
         indirection = 0
         self.table.pages[i].write(indirection)
         if (self.table.pages[i].num_records == 512):
@@ -67,15 +68,21 @@ class Query:
             self.table.pages.append(new_page)
         i = i + 1
 
-
+        j = 0
         for column in columns:
 
+                if(j == 0):
+                    key = column
                 self.table.pages[i].write(column)
 
                 if (self.table.pages[i].num_records == 512):
                         new_page = Page()
                         self.table.pages.append(new_page)
                 i = i + 1
+                j = j + 1
+        self.index.keyToRID[key] = RID
+        self.table.page_directory[RID] =(current_page,     (self.table.pages[current_page].num_records - 1) * 8       )
+        #print(self.table.page_directory)
         pass
 
     """
@@ -90,8 +97,24 @@ class Query:
     """
 
     def update(self, key, *columns):
+        self.updateRID = self.index.keyToRID[key]
+        (page, offset) = self.table.page_directory[self.updateRID]
 
-        
+
+
+
+        i = 0
+        while(self.table.tail_pages[i].num_records == 512):
+            if(self.table.tail_pages[i].num_records == 512):
+                i = i + self.table.num_columns
+
+
+        #print(key)
+        print(self.updateRID)
+        print(page, offset)
+        print(columns)
+
+
         pass
 
     """
