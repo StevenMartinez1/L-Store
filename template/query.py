@@ -15,6 +15,7 @@ class Query:
         self.table = table
         self.index = Index(table)
         self.RIDcount = 1
+        self.tailRIDcount = 2**64 -1
         pass
 
     """
@@ -39,7 +40,7 @@ class Query:
             if(self.table.pages[i].num_records == 512):
                 i = i + self.table.num_columns
         current_page = i
-        indirection = 0
+        indirection = 257777
         self.table.pages[i].write(indirection)
         if (self.table.pages[i].num_records == 512):
             new_page = Page()
@@ -100,28 +101,89 @@ class Query:
         self.updateRID = self.index.keyToRID[key]
         (page, offset) = self.table.page_directory[self.updateRID]
 
-
-
+        recordIndirection = self.readRecord(page, offset)
+        if(recordIndirection == 0):
+            hasUpdated = False
+        else:
+            hasUpdated = True
 
         i = 0
         while(self.table.tail_pages[i].num_records == 512):
             if(self.table.tail_pages[i].num_records == 512):
                 i = i + self.table.num_columns
 
+        if(hasUpdated):
+            tailIndirection = recordIndirection
+        else:
+            tailIndirection = 0
 
-        #print(key)
-        print(self.updateRID)
-        print(page, offset)
-        print(columns)
+        self.table.tail_pages[i].write(tailIndirection)
+        if (self.table.tail_pages[i].num_records == 512):
+            new_page = Page()
+            self.table.tail_pages.append(new_page)
 
+        #
+        # Need to change base page indirection and schema encoding
+        #
+
+        i = i + 1
+
+        tailRID = self.tailRIDcount
+        self.tailRIDcount = self.tailRIDcount - 1
+        self.table.tail_pages[i].write(tailRID)
+        if (self.table.tail_pages[i].num_records == 512):
+            new_page = Page()
+            self.table.tail_pages.append(new_page)
+        i = i + 1
+
+        self.table.tail_pages[i].write(0)
+        if (self.table.tail_pages[i].num_records == 512):
+            new_page = Page()
+            self.table.tail_pages.append(new_page)
+        i = i + 1
+
+        schema_encoding = 0;
+        self.table.tail_pages[i].write(schema_encoding)
+        if (self.table.tail_pages[i].num_records == 512):
+            new_page = Page()
+            self.table.tail_pages.append(new_page)
+        i = i + 1
+
+        for column in columns:
+            if(column != None):
+                self.table.tail_pages[i].write(column)
+
+            if (self.table.tail_pages[i].num_records == 512):
+                new_page = Page()
+                self.table.tail_pages.append(new_page)
+            i = i + 1
 
         pass
+
+
+
+    def readRecord(self, page, offset):
+        eightByteVal = ''
+        for i in range(8):
+            print('Index ', i)
+            binaryByte = bin((self.table.pages[page].data[offset+i]))
+            print(self.table.pages[page].data[offset+i])
+            byte = binaryByte[2:len(binaryByte)]
+            byte = (8-len(byte)) * '0' + byte
+            eightByteVal = eightByteVal + byte;
+
+        print(eightByteVal)
+
+        recordVal = int(eightByteVal, 2)
+        
+        print(recordVal)
+        return recordVal
+
 
     """
     :param start_range: int         # Start of the key range to aggregate 
     :param end_range: int           # End of the key range to aggregate 
     :param aggregate_columns: int  # Index of desired column to aggregate
     """
-
     def sum(self, start_range, end_range, aggregate_column_index):
         pass
