@@ -9,6 +9,7 @@ from template.table import Table
 class Index:
 
     def __init__(self, table):
+        self.keyToRID = {}
         pass
 
     """
@@ -23,6 +24,7 @@ class Index:
     """
 
     def create_index(self, table, column_number):
+
         pass
 
     """
