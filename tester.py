@@ -37,7 +37,7 @@ for key in records:
 for key in records:
     updated_columns = [None, None, None, None, None]
     for i in range(1, grades_table.num_columns):
-        print('i', i)
+        #print('i', i)
         value = randint(0, 20)
         updated_columns[i] = value
         original = records[key].copy()

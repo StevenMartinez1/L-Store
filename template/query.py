@@ -38,7 +38,7 @@ class Query:
         i = 0
         while(self.table.pages[i].num_records == 512):
             if(self.table.pages[i].num_records == 512):
-                i = i + self.table.num_columns
+                i = i + self.table.num_columns+4
         current_page = i
         indirection = 0
         self.table.pages[i].write(indirection)
@@ -106,7 +106,7 @@ class Query:
 
         if(hasUpdated == False):
             j = 0;
-            for i in range(4,self.table.num_columns):
+            for i in range(4,self.table.num_columns + 4):
                 if(query_columns[j] == 0):
                     recordValues.append(None)
                 else:
@@ -117,7 +117,7 @@ class Query:
             recordList.append(record)
         else:
             j = 0;
-            for i in range(4,self.table.num_columns):
+            for i in range(4,self.table.num_columns+4):
                 if(query_columns[j] == 0):
                     recordValues.append(None)
                 else:
@@ -126,8 +126,8 @@ class Query:
 
                     #self.table.tail_page_directory[tailRID]
 
-                    print('tailRID', recordIndirection)
-                    print('tailPage and offset', tailPage, offset)
+                    #print('tailRID', recordIndirection)
+                    #print('tailPage and offset', tailPage, offset)
                     recordValues.append(self.readRecord(tailPage + i, tailOffset))
                     #print(self.readRecord(tailPage + i, tailOffset))
                 j = j + 1
@@ -156,7 +156,7 @@ class Query:
         i = 0
         while(self.table.tail_pages[i].num_records == 512):
             if(self.table.tail_pages[i].num_records == 512):
-                i = i + self.table.num_columns
+                i = i + self.table.num_columns + 4
 
         indirection_tail_page = i;
 
@@ -202,7 +202,7 @@ class Query:
             if(column != None):
                 self.table.tail_pages[i].write(column)
             if(column == None):
-                column_index = i % self.table.num_columns
+                column_index = i % self.table.num_columns + 4
                 basePageRecordColumn = self.readRecord(page + column_index, offset)
                 self.table.tail_pages[i].write(basePageRecordColumn)
             if (self.table.tail_pages[i].num_records == 512):
@@ -211,8 +211,8 @@ class Query:
             i = i + 1
 
         #print('tailRID', tailRID)
-        print('tailRID', tailRID)
-        print('indirection_tail_page and offset', indirection_tail_page, (self.table.tail_pages[indirection_tail_page].num_records - 1) * 8)
+        #print('tailRID', tailRID)
+        #print('indirection_tail_page and offset', indirection_tail_page, (self.table.tail_pages[indirection_tail_page].num_records - 1) * 8)
         self.table.tail_page_directory[tailRID] = (indirection_tail_page, (self.table.tail_pages[indirection_tail_page].num_records - 1) * 8)
 
         pass
