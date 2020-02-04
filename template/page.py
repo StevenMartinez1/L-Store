@@ -18,9 +18,7 @@ class Page:
         self.num_records += 1
         offset = (self.num_records - 1) * 8
 
-        #self.table.page_directory[self.query.RID] =(,)
-
-        for k in range(0, 7):
+        for k in range(0, 8):
             eight_bits = 255
             eight_bits = value & eight_bits
             self.data[offset + 7 - k] = eight_bits
@@ -28,10 +26,13 @@ class Page:
         pass
 
     def writeAtOffset(self, value, offset):
-        for k in range(0, 7):
+       # print('write value:', value)
+
+        for k in range(0, 8):
             eight_bits = 255
             eight_bits = value & eight_bits
             self.data[offset + 7 - k] = eight_bits
             value = value >> 8
+            #print(value)
         pass
 

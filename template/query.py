@@ -40,7 +40,7 @@ class Query:
             if(self.table.pages[i].num_records == 512):
                 i = i + self.table.num_columns
         current_page = i
-        indirection = 257777
+        indirection = 0
         self.table.pages[i].write(indirection)
         if (self.table.pages[i].num_records == 512):
             new_page = Page()
@@ -92,27 +92,50 @@ class Query:
 
     def select(self, key, query_columns):
         recordList = []
-        updateRID = self.index.keyToRID[key]
-        (page, offset) = self.table.page_directory[updateRID]
+        RID = self.index.keyToRID[key]
+        (page, offset) = self.table.page_directory[RID]
 
-        record = []
+        recordValues = []
 
-        j = 0;
-        for i in range(4,self.table.num_columns):
-            if(query_columns[j] == 0):
-                record.append(None)
-            else:
-                record.append(self.readRecord(page + i, offset))
-            j = j + 1
+        recordIndirection = self.readRecord(page, offset)
 
-        recordList.append(record)
+        if(recordIndirection == 0):
+            hasUpdated = False
+        else:
+            hasUpdated = True
 
-        print(recordList[0])
+        if(hasUpdated == False):
+            j = 0;
+            for i in range(4,self.table.num_columns):
+                if(query_columns[j] == 0):
+                    recordValues.append(None)
+                else:
+                    recordValues.append(self.readRecord(page + i, offset))
+                j = j + 1
+
+            record = Record(RID,key, recordValues)
+            recordList.append(record)
+        else:
+            j = 0;
+            for i in range(4,self.table.num_columns):
+                if(query_columns[j] == 0):
+                    recordValues.append(None)
+                else:
+                    #print(recordIndirection)
+                    (tailPage, tailOffset) = self.table.tail_page_directory[recordIndirection]
+
+                    #self.table.tail_page_directory[tailRID]
+
+                    print('tailRID', recordIndirection)
+                    print('tailPage and offset', tailPage, offset)
+                    recordValues.append(self.readRecord(tailPage + i, tailOffset))
+                    #print(self.readRecord(tailPage + i, tailOffset))
+                j = j + 1
+
+            record = Record(RID,key, recordValues)
+            recordList.append(record)
 
         return recordList
-        
-
-
 
         pass
 
@@ -135,6 +158,8 @@ class Query:
             if(self.table.tail_pages[i].num_records == 512):
                 i = i + self.table.num_columns
 
+        indirection_tail_page = i;
+
         if(hasUpdated):
             tailIndirection = recordIndirection
         else:
@@ -156,6 +181,7 @@ class Query:
 
         # base page indirection = newly created tail page record RID
         self.table.pages[page].writeAtOffset(tailRID, offset)
+        #print('baseInd     ', self.readRecord(page, offset))
 
 
          # timeStamp = time()
@@ -183,6 +209,11 @@ class Query:
                 new_page = Page()
                 self.table.tail_pages.append(new_page)
             i = i + 1
+
+        #print('tailRID', tailRID)
+        print('tailRID', tailRID)
+        print('indirection_tail_page and offset', indirection_tail_page, (self.table.tail_pages[indirection_tail_page].num_records - 1) * 8)
+        self.table.tail_page_directory[tailRID] = (indirection_tail_page, (self.table.tail_pages[indirection_tail_page].num_records - 1) * 8)
 
         pass
 
