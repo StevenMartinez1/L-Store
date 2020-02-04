@@ -72,7 +72,7 @@ class Query:
         j = 0
         for column in columns:
 
-                if(j == 0):
+                if(j == self.table.key):
                     key = column
                 self.table.pages[i].write(column)
 
@@ -91,6 +91,7 @@ class Query:
     """
 
     def select(self, key, query_columns):
+
         pass
 
     """
@@ -121,11 +122,6 @@ class Query:
         if (self.table.tail_pages[i].num_records == 512):
             new_page = Page()
             self.table.tail_pages.append(new_page)
-
-        #
-        # Need to change base page indirection and schema encoding
-        #
-
         i = i + 1
 
         tailRID = self.tailRIDcount
@@ -136,6 +132,11 @@ class Query:
             self.table.tail_pages.append(new_page)
         i = i + 1
 
+        # base page indirection = newly created tail page record RID
+        self.table.pages[page].writeAtOffset(tailRID, offset)
+
+
+         # timeStamp = time()
         self.table.tail_pages[i].write(0)
         if (self.table.tail_pages[i].num_records == 512):
             new_page = Page()
@@ -152,7 +153,11 @@ class Query:
         for column in columns:
             if(column != None):
                 self.table.tail_pages[i].write(column)
-
+            if(column == None):
+                column_index = i % self.table.num_columns
+                print(column_index)
+                basePageRecordColumn = self.readRecord(page + column_index, offset)
+                self.table.tail_pages[i].write(basePageRecordColumn)
             if (self.table.tail_pages[i].num_records == 512):
                 new_page = Page()
                 self.table.tail_pages.append(new_page)
@@ -165,18 +170,12 @@ class Query:
     def readRecord(self, page, offset):
         eightByteVal = ''
         for i in range(8):
-            print('Index ', i)
             binaryByte = bin((self.table.pages[page].data[offset+i]))
-            print(self.table.pages[page].data[offset+i])
             byte = binaryByte[2:len(binaryByte)]
             byte = (8-len(byte)) * '0' + byte
             eightByteVal = eightByteVal + byte;
 
-        print(eightByteVal)
-
         recordVal = int(eightByteVal, 2)
-        
-        print(recordVal)
         return recordVal
 
 
