@@ -91,6 +91,28 @@ class Query:
     """
 
     def select(self, key, query_columns):
+        recordList = []
+        updateRID = self.index.keyToRID[key]
+        (page, offset) = self.table.page_directory[updateRID]
+
+        record = []
+
+        j = 0;
+        for i in range(4,self.table.num_columns):
+            if(query_columns[j] == 0):
+                record.append(None)
+            else:
+                record.append(self.readRecord(page + i, offset))
+            j = j + 1
+
+        recordList.append(record)
+
+        print(recordList[0])
+
+        return recordList
+        
+
+
 
         pass
 
@@ -155,7 +177,6 @@ class Query:
                 self.table.tail_pages[i].write(column)
             if(column == None):
                 column_index = i % self.table.num_columns
-                print(column_index)
                 basePageRecordColumn = self.readRecord(page + column_index, offset)
                 self.table.tail_pages[i].write(basePageRecordColumn)
             if (self.table.tail_pages[i].num_records == 512):
