@@ -18,6 +18,16 @@ class Record:
         #print(self.columns)
         #self.timeStamp = time()
         #RIDcount = RIDcount + 1
+    def __str__(self):
+        list = '['
+        for column in self.columns:
+            list = list + str(column) + ', '
+
+        list = list[0:len(list)-2]
+
+        list = list + ']'
+
+        return list
 
 class Table:
 
@@ -31,6 +41,8 @@ class Table:
         self.key = key
         self.num_columns = num_columns + 4
         self.page_directory = {}
+        self.tail_page_directory = {}
+
 
         self.pages = []
         self.tail_pages = []
