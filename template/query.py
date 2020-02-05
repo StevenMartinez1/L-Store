@@ -297,5 +297,20 @@ class Query:
     """
 
     def sum(self, start_range, end_range, aggregate_column_index):
+        sum = 0
 
+        for key in sorted(self.index.keyToRID.keys()):
+                if(key < start_range or key > end_range):
+                    continue
+                RID = self.index.keyToRID[key]
+                (page, offset) = self.table.page_directory[RID]
+
+                if(self.readRecord(page,offset) == 0):
+                    sum = sum + self.readRecord(page + aggregate_column_index + 4, offset)
+                else:
+                    tailIndirection = self.readRecord(page, offset)
+                    (tail_page, tail_offset) = self.table.tail_page_directory[tailIndirection]
+                    sum = sum + self.readTailRecord(tail_page + aggregate_column_index + 4, tail_offset)
+
+        return sum
         pass
