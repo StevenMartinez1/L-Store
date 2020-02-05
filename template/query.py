@@ -31,32 +31,33 @@ class Query:
 
 
         recordIndirection = self.readRecord(page, offset)
+
+        # delete from tail page table
         while(recordIndirection != 0):
-            for l in range(0, self.table.num_columns):
-                print(self.readRecord(page + l, offset), end=" ")
-            (page2, offset2) = self.table.page_directory[recordIndirection]
+            (page2, offset2) = self.table.tail_page_directory[recordIndirection]
             recordIndirection = self.readTailRecord(page2, offset2)
-            for j in range(0, self.table.num_columns):
-                self.table.tail_pages[page2 + j].writeAtOffset(0, offset2)
+            for l in range(0, self.table.total_columns):
+                self.table.tail_pages[page2 + l].writeAtOffset(0, offset2)
 
 
-        for i in range(0, self.table.num_columns):
+        # delete from base pages table
+        for i in range(0, self.table.total_columns):
             self.table.pages[page + i].writeAtOffset(0, offset)
         pass
+
 
     """
     # Insert a record with specified columns
     """
 
     def insert(self, *columns):
-        #schema_encoding = '0' * self.table.num_columns
         schema_encoding = 0
 
         #newRecord = Record(RIDcount, key,  )
         i = 0
         while(self.table.pages[i].num_records == 512):
             if(self.table.pages[i].num_records == 512):
-                i = i + self.table.num_columns
+                i = i + self.table.total_columns
         current_page = i
         indirection = 0
         self.table.pages[i].write(indirection)
@@ -101,14 +102,6 @@ class Query:
                 j = j + 1
         self.index.keyToRID[key] = RID
         self.table.page_directory[RID] =(current_page,     (self.table.pages[current_page].num_records - 1) * 8       )
-
-        """
-        self.currentRID = self.index.keyToRID[key]
-        (page, offset) = self.table.page_directory[self.currentRID]
-        # print out all the values in the table base pages
-        for l in range(0, self.table.num_columns):
-            print(self.readRecord(page + l ,offset), end =" ")
-        """
         pass
 
 
@@ -132,7 +125,7 @@ class Query:
 
         if(hasUpdated == False):
             j = 0
-            for i in range(4,self.table.num_columns):
+            for i in range(4,self.table.total_columns):
                 if(query_columns[j] == 0):
                     recordValues.append(None)
                 else:
@@ -143,7 +136,7 @@ class Query:
             recordList.append(record)
         else:
             j = 0
-            for i in range(4,self.table.num_columns):
+            for i in range(4,self.table.total_columns):
                 if(query_columns[j] == 0):
                     recordValues.append(None)
                 else:
@@ -183,7 +176,7 @@ class Query:
         i = 0
         while(self.table.tail_pages[i].num_records == 512):
             if(self.table.tail_pages[i].num_records == 512):
-                i = i + self.table.num_columns
+                i = i + self.table.total_columns
         current_page = i
 
         if(hasUpdated):
@@ -240,11 +233,11 @@ class Query:
                         self.table.tail_pages[i].write(column)
                 if(column == None):
                     if(tailIndirection == 0):
-                        column_index = i % self.table.num_columns
+                        column_index = i % self.table.total_columns
                         basePageRecordColumn = self.readRecord(page + column_index, offset)
                         self.table.tail_pages[i].write(basePageRecordColumn)
                     if(tailIndirection != 0):
-                        column_index = i % self.table.num_columns
+                        column_index = i % self.table.total_columns
                         (page_tail, offset_tail) = self.table.tail_page_directory[tailIndirection]
                         insert_value = self.readTailRecord(page_tail + column_index, offset_tail)
                         self.table.tail_pages[i].write(insert_value)
@@ -259,12 +252,6 @@ class Query:
         #self.index.keyToRID[key] = RID
         self.table.tail_page_directory[tailRID] = (current_page,     (self.table.tail_pages[current_page].num_records - 1) * 8       )
 
-
-        # print out all the values in the table tail pages
-        #self.currentRID = self.index.keyToRID[key]
-        #(page, offset) = self.table.page_directory[self.currentRID]
-        #for l in range(0, self.table.num_columns):
-        #   print(self.readTailRecord(i - self.table.num_columns + l , (self.table.tail_pages[i-1].num_records * 8 - 8)), end =" ")
         pass
 
 # it only reads from base pages

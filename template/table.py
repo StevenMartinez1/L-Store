@@ -39,17 +39,18 @@ class Table:
     def __init__(self, name, num_columns, key):
         self.name = name
         self.key = key
-        self.num_columns = num_columns + 4
+        self.num_columns = num_columns 
+        self.total_columns = num_columns + 4
         self.page_directory = {}
         self.tail_page_directory = {}
 
 
         self.pages = []
         self.tail_pages = []
-        for i in range(0, self.num_columns):
+        for i in range(0, self.total_columns):
             new_page = Page()
             self.pages.append(new_page)
-        for i in range(0, self.num_columns):
+        for i in range(0, self.total_columns):
             new_page = Page()
             self.tail_pages.append(new_page)
 
