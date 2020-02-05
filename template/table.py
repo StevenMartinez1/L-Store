@@ -39,7 +39,11 @@ class Table:
     def __init__(self, name, num_columns, key):
         self.name = name
         self.key = key
+<<<<<<< HEAD
         self.num_columns = num_columns 
+=======
+        self.num_columns = num_columns
+>>>>>>> 6cfa9e3deeb402e8d6b4c5c29a5accb88ee75595
         self.total_columns = num_columns + 4
         self.page_directory = {}
         self.tail_page_directory = {}
