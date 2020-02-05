@@ -45,12 +45,12 @@ class Query:
             self.table.pages[page + i].writeAtOffset(0, offset)
         pass
 
-
     """
     # Insert a record with specified columns
     """
 
     def insert(self, *columns):
+        #schema_encoding = '0' * self.table.num_columns
         schema_encoding = 0
 
         #newRecord = Record(RIDcount, key,  )
@@ -102,6 +102,14 @@ class Query:
                 j = j + 1
         self.index.keyToRID[key] = RID
         self.table.page_directory[RID] =(current_page,     (self.table.pages[current_page].num_records - 1) * 8       )
+
+        """
+        self.currentRID = self.index.keyToRID[key]
+        (page, offset) = self.table.page_directory[self.currentRID]
+        # print out all the values in the table base pages
+        for l in range(0, self.table.num_columns):
+            print(self.readRecord(page + l ,offset), end =" ")
+        """
         pass
 
 
@@ -252,6 +260,12 @@ class Query:
         #self.index.keyToRID[key] = RID
         self.table.tail_page_directory[tailRID] = (current_page,     (self.table.tail_pages[current_page].num_records - 1) * 8       )
 
+
+        # print out all the values in the table tail pages
+        #self.currentRID = self.index.keyToRID[key]
+        #(page, offset) = self.table.page_directory[self.currentRID]
+        #for l in range(0, self.table.num_columns):
+        #   print(self.readTailRecord(i - self.table.num_columns + l , (self.table.tail_pages[i-1].num_records * 8 - 8)), end =" ")
         pass
 
 # it only reads from base pages

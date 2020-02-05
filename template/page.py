@@ -19,7 +19,7 @@ class Page:
         offset = (self.num_records - 1) * 8
 
 
-        for k in range(0, 7):
+        for k in range(0, 8):
             eight_bits = 255
             if(value == None):
                 break

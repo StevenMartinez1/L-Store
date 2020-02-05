@@ -9,13 +9,13 @@ grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
 
+
 # Measuring Insert Performance
 insert_time_0 = process_time()
 for i in range(0, 10000):
-    query.insert(906659671 + i, 93, 0, 0, 0)
+    query.insert(906659671 + i, 906659671, 35, 0, 0)
     keys.append(906659671 + i)
 insert_time_1 = process_time()
-
 print("Inserting 10k records took:  \t\t\t", insert_time_1 - insert_time_0)
 
 # Measuring update Performance
@@ -28,7 +28,7 @@ update_cols = [
 ]
 
 update_time_0 = process_time()
-for i in range(0, 10000):
+for i in range(0, 5):
     query.update(choice(keys), *(choice(update_cols)))
 update_time_1 = process_time()
 print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
