@@ -31,15 +31,16 @@ class Query:
 
 
         recordIndirection = self.readRecord(page, offset)
+
+        # delete from tail page table
         while(recordIndirection != 0):
-            for l in range(0, self.table.num_columns):
-                print(self.readRecord(page + l, offset), end=" ")
-            (page2, offset2) = self.table.page_directory[recordIndirection]
+            (page2, offset2) = self.table.tail_page_directory[recordIndirection]
             recordIndirection = self.readTailRecord(page2, offset2)
-            for j in range(0, self.table.num_columns):
-                self.table.tail_pages[page2 + j].writeAtOffset(0, offset2)
+            for l in range(0, self.table.num_columns):
+                self.table.tail_pages[page2 + l].writeAtOffset(0, offset2)
 
 
+        # delete from base pages table
         for i in range(0, self.table.num_columns):
             self.table.pages[page + i].writeAtOffset(0, offset)
         pass
