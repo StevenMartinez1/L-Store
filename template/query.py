@@ -36,12 +36,12 @@ class Query:
         while(recordIndirection != 0):
             (page2, offset2) = self.table.tail_page_directory[recordIndirection]
             recordIndirection = self.readTailRecord(page2, offset2)
-            for l in range(0, self.table.num_columns):
+            for l in range(0, self.table.total_columns):
                 self.table.tail_pages[page2 + l].writeAtOffset(0, offset2)
 
 
         # delete from base pages table
-        for i in range(0, self.table.num_columns):
+        for i in range(0, self.table.total_columns):
             self.table.pages[page + i].writeAtOffset(0, offset)
         pass
 
@@ -57,7 +57,7 @@ class Query:
         i = 0
         while(self.table.pages[i].num_records == 512):
             if(self.table.pages[i].num_records == 512):
-                i = i + self.table.num_columns
+                i = i + self.table.total_columns
         current_page = i
         indirection = 0
         self.table.pages[i].write(indirection)
@@ -133,7 +133,7 @@ class Query:
 
         if(hasUpdated == False):
             j = 0
-            for i in range(4,self.table.num_columns):
+            for i in range(4,self.table.total_columns):
                 if(query_columns[j] == 0):
                     recordValues.append(None)
                 else:
@@ -144,7 +144,7 @@ class Query:
             recordList.append(record)
         else:
             j = 0
-            for i in range(4,self.table.num_columns):
+            for i in range(4,self.table.total_columns):
                 if(query_columns[j] == 0):
                     recordValues.append(None)
                 else:
@@ -184,7 +184,7 @@ class Query:
         i = 0
         while(self.table.tail_pages[i].num_records == 512):
             if(self.table.tail_pages[i].num_records == 512):
-                i = i + self.table.num_columns
+                i = i + self.table.total_columns
         current_page = i
 
         if(hasUpdated):
@@ -241,11 +241,11 @@ class Query:
                         self.table.tail_pages[i].write(column)
                 if(column == None):
                     if(tailIndirection == 0):
-                        column_index = i % self.table.num_columns
+                        column_index = i % self.table.total_columns
                         basePageRecordColumn = self.readRecord(page + column_index, offset)
                         self.table.tail_pages[i].write(basePageRecordColumn)
                     if(tailIndirection != 0):
-                        column_index = i % self.table.num_columns
+                        column_index = i % self.table.total_columns
                         (page_tail, offset_tail) = self.table.tail_page_directory[tailIndirection]
                         insert_value = self.readTailRecord(page_tail + column_index, offset_tail)
                         self.table.tail_pages[i].write(insert_value)
