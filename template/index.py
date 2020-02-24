@@ -1,10 +1,8 @@
 #from template.table import Table
 
 """
-A data strucutre holding indices for various columns of a table. 
-Key column should be indexd by default, other columns can be indexed 
-through this object. Indices are usually B-Trees, but other data
-structures can be used as well.
+# optional: Indexes the specified column of the specified table to speed up select queries
+# This data structure is usually a B-Tree
 """
 
 
@@ -12,23 +10,20 @@ class Index:
 
     def __init__(self, table):
         self.keyToRID = {}
-        # One index for each table. All our empty initially.
-        self.indices = [None] *  table.num_columns
         pass
 
     """
-    # Returns the RIDs of all records with values in column "column" 
-    between "begin" and "end"
+    # returns the location of all records with the given value
     """
 
-    def locate_range(self, begin, end, column):
+    def locate(self, value):
         pass
 
     """
     # optional: Create index on specific column
     """
 
-    def create_index(self, column_number):
+    def create_index(self, table, column_number):
 
         pass
 
@@ -36,5 +31,5 @@ class Index:
     # optional: Drop index of specific column
     """
 
-    def drop_index(self, column_number):
+    def drop_index(self, table, column_number):
         pass

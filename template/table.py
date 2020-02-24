@@ -1,7 +1,7 @@
 from template.page import *
 from time import time
-from template.config import *
 from template.index import Index
+from template.config import *
 
 
 INDIRECTION_COLUMN = 0
@@ -43,7 +43,6 @@ class Table:
         self.page_directory = {}
         self.tail_page_directory = {}
         self.page_range = num_columns + 4
-        self.index = Index(self)
 
         self.pages = [[]]
         self.tail_pages = [[]]
@@ -54,6 +53,9 @@ class Table:
         for i in range(0, self.total_columns):
             new_page = Page()
             self.tail_pages[0].append(new_page)
+
+        self.index = Index(self)
+
         pass
 
     def __merge(self):

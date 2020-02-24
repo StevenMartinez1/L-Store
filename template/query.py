@@ -58,8 +58,9 @@ class Query:
                 i = i + 1
         current_page = i
 
-        if(current_page == 5):
-            self.write_to_disk()
+
+        #if(current_page == 5 ):
+        #    self.write_to_disc()
 
         indirection = 0
         self.table.pages[i][k].write(indirection)
@@ -122,7 +123,39 @@ class Query:
     """
     # Read a record with specified key
     """
-    #Add column parameter
+    def write_db_to_disc(self):
+        for i in range(0, len(self.table.pages)):
+            write_to_disc(i)
+
+    def write_to_disc(self, pageRange):
+        name = self.table.name +"_" + str(pageRange)
+        f = open(name, "wb+")
+        for j in range(0, self.table.total_columns):
+            f.write(self.table.pages[pageRange][j].data)
+        for k in range(0, len(self.table.tail_pages[pageRange])):
+            f.write(self.table.tail_pages[pageRange][k])
+        f.close()
+
+    def write_metadata(self):
+        name = "Metadata" + "_" + self.table.name
+        f = open(name, "w+")
+        f.write(self.table.total_columns)
+        f.close
+
+    def read_from_disc(self, pageRange):
+        name = self.table.name + "_" + str(pageRange)
+        f = open(name, "rb")
+        fileContents = f.read()
+        self.table.pages[pageRange][0].data = f.seek(0)
+        for j in range(1, self.table.total_columns):
+            self.table.pages[pageRange][j].data = f.seek(4096,1)
+
+        self.table.tail_pages[pageRange][0].data = f.seek(0,1)
+        for k in range(1, len(self.table.tail_pages[pageRange])):
+            self.table.pages[pageRange][k].data = f.seek(4096, 1)
+
+        f.close()
+
     def select(self, key, query_columns):
         recordList = []
         RID = self.index.keyToRID[key]
@@ -292,7 +325,6 @@ class Query:
     :param start_range: int         # Start of the key range to aggregate 
     :param end_range: int           # End of the key range to aggregate 
     :param aggregate_columns: int  # Index of desired column to aggregate
-    # this function is only called on the primary key.
     """
 
     def sum(self, start_range, end_range, aggregate_column_index):
@@ -313,14 +345,3 @@ class Query:
 
         return sum
         pass
-
-
-    def write_to_disk(self):
-        for i in range(0, len(self.table.pages)):
-            name = self.table.name + "_" + str(i)
-            file = open(name, "wb+")
-            for j in range(0, self.table.total_columns):
-                file.write(self.table.pages[i][j].data)
-
-
-
