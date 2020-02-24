@@ -1,5 +1,6 @@
 from template.db import Database
 from template.query import Query
+from template.transaction import Transaction
 from time import process_time
 from random import choice, randrange
 
@@ -12,10 +13,9 @@ keys = []
 # Measuring Insert Performance
 insert_time_0 = process_time()
 for i in range(0, 10000):
-    query.insert(906659671 + i, 93, 0, 0, 0)
+    query.insert(906659671 + i, 93, 35, 0, 0)
     keys.append(906659671 + i)
 insert_time_1 = process_time()
-
 print("Inserting 10k records took:  \t\t\t", insert_time_1 - insert_time_0)
 
 # Measuring update Performance
@@ -26,6 +26,11 @@ update_cols = [
     [None, None, None, randrange(0, 100), None],
     [None, None, None, None, randrange(0, 100)],
 ]
+
+t = Transaction()
+t.add_query(query.update, choice(keys), *choice(update_cols))
+t.run()
+#exit()
 
 update_time_0 = process_time()
 for i in range(0, 10000):
