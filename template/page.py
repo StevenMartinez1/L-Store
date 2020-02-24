@@ -32,7 +32,6 @@ class Page:
 
 
     def writeAtOffset(self, value, offset):
-        #self.num_records += 1
 
         for k in range(0, 8):
             eight_bits = 255
