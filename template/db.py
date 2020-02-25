@@ -23,13 +23,23 @@ class Database():
             self.write_range_to_disc(i,table_index)
         #Write the metadata of a table to disk
         self.write_metadata(table_index)
-
-    #given a page range write the page range to disk
+    
+    """
+    given a page range write the page range to disk
+    1 Page Range == however pany columns we have
+    when we are writing a columns contents to file it is only one page worth (500 records)
+    """
     def write_range_to_disc(self, pageRange, table_index):
+        #compose the file name for the page range we are opening. 
         name = self.tables[table_index].name +"_" + str(pageRange)
+        #open the page range file
         f = open(name, "wb+")
+
+        #For every column of the table write the contents of that column to file
         for j in range(0, self.tables[table_index].total_columns):
             f.write(self.tables[table_index].pages[pageRange][j].data)
+
+        #For every tail page we have, write the page to file
         for k in range(0, len(self.tables[table_index].tail_pages[pageRange])):
             f.write(self.tables[table_index].tail_pages[pageRange][k].data)
         f.close()
