@@ -1,6 +1,6 @@
 from template.db import Database
 from template.query import Query
-#from lstore.config import init
+#from template.config import init
 
 from random import choice, randint, sample, seed
 #from colorama import Fore, Back, Style
@@ -22,6 +22,7 @@ for i in range(0, 1000):
     records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
     query.insert(*records[key])
     print('inserted', records[key])
+
 
 for key in records:
     record = query.select(key, [1, 1, 1, 1, 1])[0]
@@ -50,7 +51,7 @@ for key in records:
         if error:
             print('update error on', original, 'and', updated_columns, ':', record, ', correct:', records[key])
         else:
-            print('update on', original, 'and', updated_columns, ':', record) 
+            print('update on', original, 'and', updated_columns, ':', record)
         updated_columns[i] = None
 
 keys = sorted(list(records.keys()))
@@ -63,7 +64,5 @@ for c in range(0, grades_table.num_columns):
             print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
         else:
             print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
-
-
 
 

@@ -1,14 +1,34 @@
 from template.db import Database
 from template.query import Query
-from template.transaction import Transaction
 from time import process_time
 from random import choice, randrange
-
+from template.transaction import *
+import pickle
 # Student Id and 4 grades
 db = Database()
 grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
+
+a = { 'a': 1,
+      'b': 2}
+with open('file.txt', 'wb') as handle:
+    pickle.dump(a, handle)
+
+with open('file.txt', 'rb') as handle:
+    b = pickle.loads(handle.read())
+print(b)
+b[3] = 6
+print(b)
+apples = [[]]
+apples[0].append(0)
+apples[0][0] = 3
+apples.append([1])
+apples[1][0] = 3
+apples[0].append(5)
+#apples[0].remove(5)
+del apples[0][1]
+#print(apples[0][1])
 
 # Measuring Insert Performance
 insert_time_0 = process_time()
@@ -30,7 +50,72 @@ update_cols = [
 t = Transaction()
 t.add_query(query.update, choice(keys), *choice(update_cols))
 t.run()
+
 #exit()
+
+
+update_time_0 = process_time()
+for i in range(0, 10000):
+    query.update(choice(keys), *(choice(update_cols)))
+update_time_1 = process_time()
+print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
+
+# Measuring Select Performance
+select_time_0 = process_time()
+for i in range(0, 10000):
+    query.select(choice(keys), [1, 1, 1, 1, 1])
+select_time_1 = process_time()
+print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
+
+# Measuring Aggregate Performance
+agg_time_0 = process_time()
+for i in range(0, 10000, 100):
+    result = query.sum(i, 100, randrange(0, 5))
+agg_time_1 = process_time()
+print("Aggregate 10k of 100 record batch took:\t", agg_time_1 - agg_time_0)
+
+
+db.close()
+
+
+print("close is successful")
+
+# Measuring Delete Performance
+#delete_time_0 = process_time()
+#for i in range(0, 10000):
+#    query.delete(906659671 + i)
+#delete_time_1 = process_time()
+#print("Deleting 10k records took:  \t\t\t", delete_time_1 - delete_time_0)
+
+
+db.open('~/Metadata_Grades')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Measuring update Performance
+update_cols = [
+    [randrange(0, 100), None, None, None, None],
+    [None, randrange(0, 100), None, None, None],
+    [None, None, randrange(0, 100), None, None],
+    [None, None, None, randrange(0, 100), None],
+    [None, None, None, None, randrange(0, 100)],
+]
+
+
+
+#exit()
+
 
 update_time_0 = process_time()
 for i in range(0, 10000):
@@ -58,3 +143,5 @@ for i in range(0, 10000):
     query.delete(906659671 + i)
 delete_time_1 = process_time()
 print("Deleting 10k records took:  \t\t\t", delete_time_1 - delete_time_0)
+
+

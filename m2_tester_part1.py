@@ -1,10 +1,11 @@
-from lstore.db import Database
-from lstore.query import Query
+from template.db import Database
+from template.query import Query
+import pickle
 
 from random import choice, randint, sample, seed
 
 db = Database()
-db.open('~/ECS165')
+#db.open('~/Metadata.txt')
 # Student Id and 4 grades
 grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
@@ -17,16 +18,19 @@ for i in range(0, 1000):
     query.insert(*records[key])
 keys = sorted(list(records.keys()))
 print("Insert finished")
-
+count = 0
 for key in keys:
+    count = count + 1
     record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
     error = False
     for i, column in enumerate(record.columns):
         if column != records[key][i]:
+            print(count)
+
             error = True
     if error:
         print('select error on', key, ':', record, ', correct:', records[key])
-    # else:
+    #else:
     #     print('select on', key, ':', record)
 print("Select finished")
 
@@ -60,4 +64,13 @@ for i in range(0, 100):
     # else:
     #     print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
 print("Aggregate finished")
+
+
+
+with open('file2.txt', 'wb') as handle:
+    pickle.dump(keys, handle)
+
+
+
+
 db.close()

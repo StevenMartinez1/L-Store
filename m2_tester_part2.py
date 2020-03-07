@@ -1,11 +1,12 @@
-from lstore.db import Database
-from lstore.query import Query
+from template.db import Database
+from template.query import Query
+import pickle
 
 from random import choice, randint, sample, seed
 
 # Student Id and 4 grades
 db = Database()
-db.open('~/ECS165')
+db.open('~/Metadata.txt')
 grades_table = db.get_table('Grades')
 query = Query(grades_table)
 
@@ -26,6 +27,8 @@ for key in keys:
     print(records[key])
     print(records[key])
 
+with open('file2.txt', 'rb') as handle:
+    keys = pickle.loads(handle.read())
 for key in keys:
     record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
     error = False

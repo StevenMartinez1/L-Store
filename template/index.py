@@ -9,7 +9,8 @@
 class Index:
 
     def __init__(self, table):
-        self.keyToRID = {}
+
+
         pass
 
     """
@@ -33,3 +34,6 @@ class Index:
 
     def drop_index(self, table, column_number):
         pass
+
+    # def write_indexes(self):
+    #     print("i am in")

@@ -40,16 +40,29 @@ class Table:
         self.key = key
         self.num_columns = num_columns
         self.total_columns = num_columns + 4
+
+        # self.indeces = []
+        # for i in range(self.num_columns):
+        #     self.indeces.append({})
         self.page_directory = {}
+
+
         self.tail_page_directory = {}
         self.page_range = num_columns + 4
+        self.keyToRID = {}
+
+
+        self.use_count = [0] * 11
+        self.clean =[0] * 11
+        self.pin =[0] * 11
 
         self.pages = [[]]
         self.tail_pages = [[]]
+        self.ranges_in_buffer = [0]
+        self.range_id = 1
         for i in range(0, self.page_range):
             new_page = Page()
             self.pages[0].append(new_page)
-            #self.pages.append(new_page)
         for i in range(0, self.total_columns):
             new_page = Page()
             self.tail_pages[0].append(new_page)
@@ -58,6 +71,5 @@ class Table:
 
         pass
 
-    def __merge(self):
-        pass
+
  
