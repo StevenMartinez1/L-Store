@@ -2,22 +2,31 @@ from template.table import Table, Record
 from template.index import Index
 from template.page import *
 from template.config import *
+from template.lock import *
 from time import *
 import threading
 
 
+#lock1 = threading.Lock()
+
+RIDcount = 1
+tailRIDcount = 2 ** 64 - 1
 class Query:
     """
     # Creates a Query object that can perform different queries on the specified table 
     """
 
-
     def __init__(self, table):
         self.table = table
         self.index = Index(table)
-        self.RIDcount = 1
-        self.tailRIDcount = 2 ** 64 - 1
+
+
+        global RIDcount
+        self.RIDcount = RIDcount
+        global tailRIDcount
+        self.tailRIDcount = tailRIDcount
         self.lock = threading.Lock()
+
         pass
 
     """
@@ -26,10 +35,8 @@ class Query:
     """
 
     def delete(self, key):
-
         self.updateRID = self.table.keyToRID[key]
         (page, offset) = self.table.page_directory[self.updateRID]
-
 
         recordIndirection = self.readRecord(page, 0, offset)
         if (recordIndirection == 0):
@@ -79,9 +86,7 @@ class Query:
     """
 
     def insert(self, *columns):
-
         schema_encoding = 0
-
         i = 0
         k = 0
 
@@ -162,9 +167,9 @@ class Query:
             self.table.tail_pages.append([new_tail_page])
 
         k = k + 1
-
-        RID = self.RIDcount
-        self.RIDcount = self.RIDcount + 1
+        global RIDcount
+        RID = RIDcount
+        RIDcount = RIDcount + 1
         self.table.pages[i][k].write(RID)
         if ((self.table.pages[i][k].num_records == 512) and max_range_reached == False):
             new_page = Page()
@@ -206,14 +211,11 @@ class Query:
 
                 k = k + 1
                 j = j + 1
-        # insertColumn = 0
-        # for column in columns:
-        #     if column not in self.table.indeces[insertColumn]:
-        #         self.table.indeces[insertColumn][column] = [RID]
-        #     else:
-        #         self.table.indeces[insertColumn][column].append(RID)
-        #     insertColumn = insertColumn + 1
         self.table.keyToRID[key] = RID
+
+        lock = Lock()
+        self.table.RIDToLocks[RID] = lock
+
         self.table.page_directory[RID] =(current_page, (self.table.pages[current_page][0].num_records - 1) * 8)
 
         self.table.clean[current_page] = 1
@@ -277,7 +279,6 @@ class Query:
             tail_range[k].num_records = int.from_bytes(num_rec, "little")
         f.close()
 
-
         return base_range, tail_range
 
     def write_metadata(self):
@@ -303,13 +304,21 @@ class Query:
     def select(self, key, column, query_columns):
         column = 0
         recordList = []
+
         RID = self.table.keyToRID[key]
+
+        #if(self.table.RIDToLocks[RID].exclusive_lock_acquire() == False):
+            #return False
+
+        self.table.table_lock.acquire()
         (page, offset) = self.find_the_page(key)
+        self.table.table_lock.release()
         self.table.pin[page] += 1
 
         recordValues = []
 
         recordIndirection = self.readRecord(page, 0, offset)
+
         if(recordIndirection == 0):
             hasUpdated = False
         else:
@@ -350,7 +359,6 @@ class Query:
 
         self.table.pin[page] -= 1
         return recordList
-        pass
 
     """
     # Update a record with specified key and columns
@@ -406,39 +414,9 @@ class Query:
 
 
     def update(self, key, *columns):
-
-
-
-
-        # insertColumn = 0
-        # for column in columns:
-        #     if (column != None):
-        #         for val in self.table.indeces[col]
-        #
-        #
-        #         if column not in self.table.indeces[insertColumn]:
-        #             self.table.indeces[insertColumn][column] = [RID]
-        #         else:
-        #             self.table.indeces[insertColumn][column].append(RID)
-        #         insertColumn = insertColumn + 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         baseRID = self.table.keyToRID[key]
         (page, offset) = self.find_the_page(key)
         self.table.pin[page] += 1
-
 
         recordIndirection = self.readRecord(page, 0, offset)
         if(recordIndirection == 0):
@@ -454,7 +432,6 @@ class Query:
                     hasUpdated = False
 
 
-
         i = 0
         while(self.table.tail_pages[page][i].num_records == 512):
             if(self.table.tail_pages[page][i].num_records == 512):
@@ -462,7 +439,6 @@ class Query:
 
 
         current_page = i
-
 
         if(self.table.tail_pages[page][i].num_records == 0):
             # insert TSP for all pages of the range as first record
@@ -479,19 +455,14 @@ class Query:
         else:
             tailIndirection = 0
 
-
         self.table.tail_pages[page][i].write(tailIndirection)
         if (self.table.tail_pages[page][i].num_records == 512):
             new_page = Page()
             self.table.tail_pages[page].append(new_page)
-        #
-        # Need to change base page indirection and schema encoding
-        #
-
         i = i + 1
-
-        tailRID = self.tailRIDcount
-        self.tailRIDcount = self.tailRIDcount - 1
+        global tailRIDcount
+        tailRID = tailRIDcount
+        tailRIDcount = tailRIDcount - 1
         self.table.tail_pages[page][i].write(tailRID)
         if (self.table.tail_pages[page][i].num_records == 512):
             new_page = Page()
@@ -501,8 +472,6 @@ class Query:
         # base page indirection = newly created tail page record RID
         self.table.pages[page][0].writeAtOffset(tailRID, offset)
 
-        # timeStamp = time()
-        # self.table.tail_pages[page][i].write(int(timeStamp))
 
         self.table.tail_pages[page][i].write(baseRID)
         if (self.table.tail_pages[page][i].num_records == 512):
@@ -520,7 +489,7 @@ class Query:
             self.table.tail_pages[page].append(new_page)
         i = i + 1
 
-        change_in_schema = 0 # 000..000
+        change_in_schema = 0
         for column in columns:
                 if(column != None):
                         self.table.tail_pages[page][i].write(column)
@@ -553,6 +522,7 @@ class Query:
 
         self.table.tail_page_directory[tailRID] = (current_page, (self.table.tail_pages[page][current_page].num_records - 1) * 8)
 
+
         self.table.use_count[page] += 1
         self.table.clean[page] = 1
         self.table.pin[page] -= 1
@@ -560,13 +530,12 @@ class Query:
         if (self.table.tail_pages[page][0].num_records == 512): # it means first set of tail page range is full
             self.merge(page)
 
-        pass
-
+        return True
 
 
     def merge(self, page_range):
+        print("inside merge")
         # 1. create the copy of base page range
-
         self.copy_pages = []
 
         for page_index in range(4, self.table.total_columns):
@@ -586,7 +555,6 @@ class Query:
             self.copy_pages[counter].writeAtOffset(last_RID, 0)
             counter = counter + 1
         while(record_num != 1):
-
             if(last_RID == 0):
                 record_num = record_num - 1
                 offset_of_last_rec = (record_num - 1) * 8
@@ -608,6 +576,7 @@ class Query:
                 inderection = self.readTailRecord(page_range, 0, offset_of_last_rec)
 
                 while(inderection != 0):
+                    print(inderection)
                     (tail_page, tail_offset) = self.table.tail_page_directory[inderection]
                     self.table.tail_pages[page_range][1].writeAtOffset(0, tail_offset)
 
@@ -617,6 +586,7 @@ class Query:
                 offset_of_last_rec = (record_num - 1) * 8
                 last_RID = self.readTailRecord(page_range, 1, offset_of_last_rec)
         # 3. replace the base page range
+        #print("Merge 4")
         self.lock.acquire()
         counter = 0
         for i in range(4, self.table.total_columns):
@@ -633,7 +603,6 @@ class Query:
             del self.table.tail_pages[page_range][0]
         self.lock.release()
         # 6. update the function depending on the inderection
-
         pass
 
 # it only reads from base pages
@@ -659,12 +628,12 @@ class Query:
 
         return recordVal
 
+
     """
     :param start_range: int         # Start of the key range to aggregate 
     :param end_range: int           # End of the key range to aggregate 
     :param aggregate_columns: int  # Index of desired column to aggregate
     """
-
     def sum(self, start_range, end_range, aggregate_column_index):
         sum = 0
 
@@ -699,4 +668,20 @@ class Query:
                 self.table.pin[page] -= 1
 
         return sum
-        pass
+
+    """
+    incremenets one column of the record
+    this implementation should work if your select and update queries already work
+    :param key: the primary of key of the record to increment
+    :param column: the column to increment
+    # Returns True is increment is successful
+    # Returns False if no record matches key or if target record is locked by 2PL.
+    """
+    def increment(self, key, column):
+        r = self.select(key, self.table.key, [1] * self.table.num_columns)[0]
+        if r is not False:
+            updated_columns = [None] * self.table.num_columns
+            updated_columns[column] = r.columns[column] + 1
+            u = self.update(key, *updated_columns)
+            return u
+        return False

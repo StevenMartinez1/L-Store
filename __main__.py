@@ -10,16 +10,18 @@ grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
 
-#a = { 'a': 1,
-#      'b': 2}
-#with open('file.txt', 'wb') as handle:
-#    pickle.dump(a, handle)
 
-#with open('file.txt', 'rb') as handle:
-#    b = pickle.loads(handle.read())
-#print(b)
-#b[3] = 6
-#print(b)
+
+a = { 'a': 1,
+      'b': 2}
+with open('file.txt', 'wb') as handle:
+    pickle.dump(a, handle)
+
+with open('file.txt', 'rb') as handle:
+    b = pickle.loads(handle.read())
+print(b)
+b[3] = 6
+print(b)
 apples = [[]]
 apples[0].append(0)
 apples[0][0] = 3
@@ -63,7 +65,7 @@ print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
 # Measuring Select Performance
 select_time_0 = process_time()
 for i in range(0, 10000):
-    query.select(choice(keys), 0, [1, 1, 1, 1, 1])
+    query.select(choice(keys), [1, 1, 1, 1, 1])
 select_time_1 = process_time()
 print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
 
@@ -126,7 +128,7 @@ print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
 # Measuring Select Performance
 select_time_0 = process_time()
 for i in range(0, 10000):
-    query.select(choice(keys), 0, [1, 1, 1, 1, 1])
+    query.select(choice(keys), [1, 1, 1, 1, 1])
 select_time_1 = process_time()
 print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
 
